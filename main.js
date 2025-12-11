@@ -7,7 +7,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { print } = require('pdf-to-printer');
 
-const APP_NAME = 'Printer Bridge';
+const APP_NAME = 'DTF Gangsheet Printer Bridge';
 const DEFAULT_PORT = 3321;
 const HOST = process.env.PRINTER_BRIDGE_HOST || '127.0.0.1';
 
@@ -36,7 +36,7 @@ const ensureSingleInstance = () => {
     return false;
   }
   app.on('second-instance', () => {
-    notify('Printer Bridge is already running in the tray.');
+    notify('DTF Gangsheet Printer Bridge is already running in the tray.');
   });
   return true;
 };
@@ -62,11 +62,12 @@ const createHiddenWindow = () =>
   });
 
 const createTrayIcon = () => {
-  const data =
-    'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABPklEQVR4Ae2WMW7CQBBFnzYoUX0AVXQA1XPAA6gAqgA6gA64AnSBXhiqf0KpTworFW9t3gn2Ax7riaTG5v2b2b59Eie1m81mA1prgFMksvlcHQC97znnE2DCCGEEELIpXKk0+l09BoNBkYhiGEECTJ4/F4v98fVVUP4ynU6HcdxHIYQQYsiyLJ3H4/H4pVIpQwghRGm1Wo3xeJxOp0P8asMwzTVNDBMEwa/3+/1+n2+2m83m82m83mezWbL0+lEIoGEEELIpVKp9FoNft8PNptNJLlcjmEYppQSyKRSCQCEybDYbTqVQt9sNjUYDoduFqhUEwTBm81mUy+UShUKg0wmkykUCiUQiIRiIfD6/X6/UajUaiURqNR9Ho9B4PB6vW63WazGYzQaPRmEajUaj0Sg0+m320Wg0QnK5jMlkMqPRaG63G6/Xw+PxuPxcLlcDqVSCQymcykUCmUQi8Xi8/n8fj2Px2AwGPx+PpVIpFIhFI5H15NQF+APX5LbkGJTIQAAAABJRU5ErkJggg==';
-  return nativeImage.createFromDataURL(`data:image/png;base64,${data}`).resize({
-    width: 16,
-    height: 16,
+  
+  const iconPath = path.join(__dirname, 'assets', 'icon.png');
+
+  return nativeImage.createFromPath(iconPath).resize({
+    width: 32,
+    height: 32,
   });
 };
 
@@ -173,6 +174,7 @@ const refreshPrinters = async () => {
     console.error('Failed to fetch printers', error);
   }
   updateTrayMenu();
+  notify("Refreshed printers")
   return printers;
 };
 
@@ -226,6 +228,7 @@ const createServer = () => {
         isDefault: printer.isDefault,
       })),
     });
+    notify("DTF Gangsheet Printer Bridge started.")
   });
 
   serverApp.post('/printers/select', async (req, res) => {
@@ -267,6 +270,7 @@ const createServer = () => {
       res.status(400).json({ ok: false, error: 'Field "url" is required.' });
       return;
     }
+
     const normalizedUrl = url.trim();
     if (!/^https?:\/\//i.test(normalizedUrl)) {
       res.status(400).json({ ok: false, error: 'Only http/https URLs are supported.' });
